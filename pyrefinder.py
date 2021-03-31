@@ -58,7 +58,7 @@ def fighter_alerts_callback(client, userdata, msg):
         client (mqtt.Client()): the mqtt client
         userdata (any): private user data added (not used)
         msg (json): json with client id of sender and the alert
-    """"
+    """
     print(msg.topic + " " + str(msg.payload))
 
 
