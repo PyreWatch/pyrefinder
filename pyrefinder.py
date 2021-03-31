@@ -3,9 +3,17 @@ import logging
 
 
 def on_connect(client, userdata, flags, rc):
+    '''
+    Takes in connection info and subscribes to the following topics:
+    - dt/fighter/+ : all fighter devices (expects a json status)
+    - dt/fighter/+/lwt : all fighter devices last will (to see if devices disconnect)
+    - dt/fighter/alerts : all fighter alerts (if any come in)
+    - cmd/fighter/+ : all fighter json responses (command and if it was a success or failure)  
+    '''
     if rc == 0:
         print("Connected")
-        client.subscribe("$SYS/#")
+        client.subscribe([("dt/fighter/+", 1), ("dt/fighter/+/lwt", 1),
+                          ("dt/fighter/alerts", 2), ("cmd/fighter/+", 1)])
     else:
         print("Failed to connect")
 
