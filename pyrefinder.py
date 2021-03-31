@@ -2,8 +2,10 @@ import os
 
 import paho.mqtt.client as mqtt
 
+import utils
+
 host = os.getenv('PF_HOST')
-port = os.getenv('PF_PORT')
+port = 1883
 
 
 def on_connect(client, userdata, flags, rc):
@@ -15,11 +17,11 @@ def on_connect(client, userdata, flags, rc):
         rc: (int): connection result (0 success, 1 error)
 
     Returns:
-        Connects client, on connection to the following topics
-        - dt/fighter/+ : all fighter devices (expects a json status)
-        - dt/fighter/+/lwt : all fighter devices last will (to see if devices disconnect)
-        - dt/fighter/alerts : all fighter alerts (if any come in)
-        - cmd/fighter/+ : all fighter json responses (command and if it was a success or failure)  
+        On connection, subscribes to the following topics
+        - dt/fighter/+ : all fighter devices -> json
+        - dt/fighter/+/lwt : all fighter devices last will -> str
+        - dt/fighter/alerts : all fighter alerts -> json
+        - cmd/fighter/+ : all fighter json responses -> json  
     """
     if rc == 0:
         print("Connected")
@@ -38,6 +40,7 @@ def fighter_status_callback(client, userdata, msg):
         msg (json): json with lat, lng, image, and status of fire
     """
     print(msg.topic + " " + str(msg.payload))
+    print('Client is', utils.client_from_topic(msg.topic))
 
 
 def fighter_lwt_callback(client, userdata, msg):
