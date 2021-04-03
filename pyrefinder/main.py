@@ -1,15 +1,22 @@
+import json
+import logging
 import os
 
 import paho.mqtt.client as mqtt
 
-import utils
+from . import db
 
 host = os.getenv('PF_HOST')
 port = 1883
 
 
 def on_connect(client, userdata, flags, rc):
-    """
+    """On connection, subscribes to the following topics
+        - dt/fighter/+ : all fighter devices -> json
+        - dt/fighter/+/lwt : all fighter devices last will -> str
+        - dt/fighter/alerts : all fighter alerts -> json
+        - cmd/fighter/+ : all fighter json responses -> json
+    
     Args:
         client (mqtt.Client()): the mqtt client
         userdata (any): private user data added (not used)
@@ -17,18 +24,13 @@ def on_connect(client, userdata, flags, rc):
         rc: (int): connection result (0 success, 1 error)
 
     Returns:
-        On connection, subscribes to the following topics
-        - dt/fighter/+ : all fighter devices -> json
-        - dt/fighter/+/lwt : all fighter devices last will -> str
-        - dt/fighter/alerts : all fighter alerts -> json
-        - cmd/fighter/+ : all fighter json responses -> json  
+        None: nothing  
     """
     if rc == 0:
-        print("Connected")
         client.subscribe([("dt/fighter/+", 1), ("dt/fighter/+/lwt", 1),
                           ("dt/fighter/alerts", 2), ("cmd/fighter/+", 1)])
     else:
-        print("Failed to connect")
+        return
 
 
 def fighter_status_callback(client, userdata, msg):
@@ -39,8 +41,9 @@ def fighter_status_callback(client, userdata, msg):
         userdata (any): private user data added (not used)
         msg (json): json with lat, lng, image, and status of fire
     """
-    print(msg.topic + " " + str(msg.payload))
-    print('Client is', utils.client_from_topic(msg.topic))
+    logging.debug(f"Adding status point {msg.payload} to fighter_data")
+    jsondict = json.loads(msg.payload)
+    db.add_fighter_status(msg.topic, jsondict)
 
 
 def fighter_lwt_callback(client, userdata, msg):
@@ -72,12 +75,17 @@ def fighter_cmd_res_callback(client, userdata, msg):
         client (mqtt.Client()): the mqtt client
         userdata (any): private user data added (not used)
         msg (json): json with the command ran, result, and error message if present
-    """    
+    """
     print(msg.topic + " " + str(msg.payload))
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger()
+
     client = mqtt.Client()
+    client.enable_logger(logger)
+
     client.on_connect = on_connect
 
     client.message_callback_add("dt/fighter/+", fighter_status_callback)
