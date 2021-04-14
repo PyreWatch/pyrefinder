@@ -9,7 +9,7 @@ create table fighter (
   id text primary key,
   latitude decimal not null,
   longitude decimal not null,
-  last_status text,
+  last_fire_status text,
   last_time text,
   last_image_path text
 );
@@ -23,7 +23,7 @@ create table fighter_data (
 );
 create trigger update_status after insert on fighter_data
 begin
-  update fighter set last_status = new.status where fighter.id = new.client_id;
+  update fighter set last_fire_status = new.status where fighter.id = new.client_id;
 end;
 create trigger update_time after insert on fighter_data
 begin

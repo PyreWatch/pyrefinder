@@ -68,17 +68,6 @@ def fighter_alerts_callback(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload))
 
 
-def fighter_cmd_res_callback(client, userdata, msg):
-    """Callback for listening to fighter responses to commands
-
-    Args:
-        client (mqtt.Client()): the mqtt client
-        userdata (any): private user data added (not used)
-        msg (json): json with the command ran, result, and error message if present
-    """
-    print(msg.topic + " " + str(msg.payload))
-
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger()
@@ -91,7 +80,6 @@ if __name__ == "__main__":
     client.message_callback_add("dt/fighter/+", fighter_status_callback)
     client.message_callback_add("dt/fighter/+/lwt", fighter_lwt_callback)
     client.message_callback_add("dt/fighter/alerts", fighter_alerts_callback)
-    client.message_callback_add("cmd/fighter/+", fighter_cmd_res_callback)
 
     client.connect(host, port)
     client.loop_forever()
