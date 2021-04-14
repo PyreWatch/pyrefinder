@@ -72,7 +72,7 @@ def add_fighter(topic, jsondict):
         )
         return True
     except Exception as e:
-        logging.error("Exception produced: %d", e)
+        logging.error("Exception produced while adding fighter: %d", e)
         return False
 
 
@@ -95,7 +95,7 @@ def add_fighter_status(topic, jsondict):
         db = DatabaseManager()
         fighters = db.query_db("select id from fighter where id=?", [client])
 
-        if fighters is None:
+        if fighters == []:
             add_fighter(topic, jsondict)
 
         db.modify_db(
@@ -113,5 +113,5 @@ def add_fighter_status(topic, jsondict):
         del db
         return True
     except Exception as e:
-        logging.error("Exception produced: %d", e)
+        logging.error("Exception produced while adding fighter: %d", e)
         return False
