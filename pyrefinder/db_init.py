@@ -10,6 +10,7 @@ create table fighter (
   latitude decimal not null,
   longitude decimal not null,
   last_status text,
+  last_time text,
   last_image_path text
 );
 drop table if exists fighter_data ;
@@ -20,9 +21,13 @@ create table fighter_data (
   image_path text,
   foreign key(client_id) references fighter(id)
 );
-create trigger update_image after insert on fighter_data
+create trigger update_status after insert on fighter_data
 begin
-  update fighter set last_image_path = new.image_path where fighter.id = new.client_id 
+  update fighter set last_status = new.status where fighter.id = new.client_id;
+end;
+create trigger update_time after insert on fighter_data
+begin
+  update fighter set last_time = new.time where fighter.id = new.client_id;
 end;
 """
 

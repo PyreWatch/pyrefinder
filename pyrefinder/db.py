@@ -105,11 +105,6 @@ def add_fighter_status(topic, jsondict):
             f"Inserted new status: {client}, {now}, {status} into the fighter data table"
         )
 
-        # modifying last_status for the fighter (for pruning purposes)
-        db.modify_db("update fighter set last_status=? where id=?",
-                     [now, client])
-        logging.debug(f"Updated {client}'s last_status update to {now}")
-
         del db
         return True
     except Exception as e:
