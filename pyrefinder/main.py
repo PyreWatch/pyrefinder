@@ -70,7 +70,7 @@ def fighter_fire_image_callback(client, userdata, msg):
     im = image.bytes_to_image(msg.payload)
     filepath = image.create_image_filename(msg.topic)
     image.save_image("images/fire", filepath, im)
-    db.update_image_path(filepath)
+    db.update_image_path(f"images/fire/{filepath}")
 
 
 def fighter_nofire_image_callback(client, userdata, msg):
@@ -84,7 +84,7 @@ def fighter_nofire_image_callback(client, userdata, msg):
     im = image.bytes_to_image(msg.payload)
     filepath = image.create_image_filename(msg.topic)
     image.save_image("images/nofire", filepath, im)
-    db.update_image_path(filepath)
+    db.update_image_path(f"images/nofire/{filepath}")
 
 
 def fighter_alerts_callback(client, userdata, msg):

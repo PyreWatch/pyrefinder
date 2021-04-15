@@ -112,27 +112,32 @@ def add_fighter_status(topic, jsondict):
         return False
 
 
-def update_image_path(filename):
+def update_image_path(path):
     """Updates the image path for a fighter given the image filepath
 
     Args:
-        filename (str): the filename of the image
+        filename (str): the filename of the image, i.e images/fire/name_time.jpg
 
     Returns:
         [bool]: returns whether or not the update was without error
         Note: if fighter is not in database, this fails silently atm
     """
-    splits = filename.split("/")
+    path_splits = path.split("/")
 
-    client_id = splits[0]
+    filename = path_splits[2]
+
+    filename_splits = filename.split("_")
+
+    client_id = filename_splits[0]
+
+    logging.debug(client_id)
 
     try:
         db = DatabaseManager()
         db.modify_db(
             "update fighter set last_image_path = ? where fighter.id = ?",
-            [filename, client_id])
-        logging.debug(
-            f"Updated {client_id}'s last image file path to {filename}")
+            [path, client_id])
+        logging.debug(f"Updated {client_id}'s last image file path to {path}")
         del db
         return True
     except Exception as e:

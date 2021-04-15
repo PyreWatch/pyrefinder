@@ -32,7 +32,7 @@ def bytes_to_image(bytes):
 
 
 def create_image_filename(topic):
-    """ Creates an image filename using the current time and the client id
+    """Creates an image filename using the current time and the client id
 
     Args:
         topic (str): the topic where the the message was sent to; utilized to get the client id
