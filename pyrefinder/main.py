@@ -4,7 +4,7 @@ import os
 
 import paho.mqtt.client as mqtt
 
-from . import db
+from . import db, image
 
 host = os.getenv('PF_HOST')
 port = 1883
@@ -28,7 +28,9 @@ def on_connect(client, userdata, flags, rc):
     """
     if rc == 0:
         client.subscribe([("dt/fighter/+", 1), ("dt/fighter/+/lwt", 1),
-                          ("dt/fighter/alerts", 2), ("cmd/fighter/+", 1)])
+                          ("dt/fighter/+/fire_image", 1),
+                          ("dt/fighter/alerts", 2),
+                          ("dt/fighter/+/nofire_image", 1)])
     else:
         return
 
@@ -41,7 +43,7 @@ def fighter_status_callback(client, userdata, msg):
         userdata (any): private user data added (not used)
         msg (json): json with lat, lng, image, and status of fire
     """
-    logging.debug(f"Adding status point {msg.payload} to fighter_data")
+    logging.debug(f"Adding status point to fighter_data")
     jsondict = json.loads(msg.payload)
     db.add_fighter_status(msg.topic, jsondict)
 
@@ -55,6 +57,28 @@ def fighter_lwt_callback(client, userdata, msg):
         msg ((str): last will payload: string [Online, Offline]
     """
     print(msg.topic + " " + str(msg.payload))
+
+
+def fighter_fire_image_callback(client, userdata, msg):
+    """Callback for listening to fighter images:
+
+    Args:
+        client (mqtt.Client()): the mqtt client
+        userdata (any): private user data added (not used)
+        msg (bytes): the byte representation of the image
+    """
+    image.bytes_to_image("images/fire", msg.payload)
+
+
+def fighter_nofire_image_callback(client, userdata, msg):
+    """Callback for listening to fighter images:
+
+    Args:
+        client (mqtt.Client()): the mqtt client
+        userdata (any): private user data added (not used)
+        msg (bytes): the byte representation of the image
+    """
+    image.bytes_to_image("images/nofire", msg.payload)
 
 
 def fighter_alerts_callback(client, userdata, msg):
@@ -79,6 +103,10 @@ if __name__ == "__main__":
 
     client.message_callback_add("dt/fighter/+", fighter_status_callback)
     client.message_callback_add("dt/fighter/+/lwt", fighter_lwt_callback)
+    client.message_callback_add("dt/fighter/+/fire_image",
+                                fighter_fire_image_callback)
+    client.message_callback_add("dt/fighter/+/nofire_image",
+                                fighter_nofire_image_callback)
     client.message_callback_add("dt/fighter/alerts", fighter_alerts_callback)
 
     client.connect(host, port)
