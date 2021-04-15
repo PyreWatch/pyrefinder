@@ -67,7 +67,10 @@ def fighter_fire_image_callback(client, userdata, msg):
         userdata (any): private user data added (not used)
         msg (bytes): the byte representation of the image
     """
-    image.bytes_to_image("images/fire", msg.payload)
+    im = image.bytes_to_image(msg.payload)
+    filepath = image.create_image_filename(msg.topic)
+    image.save_image("images/fire", filepath, im)
+    db.update_image_path(filepath)
 
 
 def fighter_nofire_image_callback(client, userdata, msg):
@@ -78,7 +81,10 @@ def fighter_nofire_image_callback(client, userdata, msg):
         userdata (any): private user data added (not used)
         msg (bytes): the byte representation of the image
     """
-    image.bytes_to_image("images/nofire", msg.payload)
+    im = image.bytes_to_image(msg.payload)
+    filepath = image.create_image_filename(msg.topic)
+    image.save_image("images/nofire", filepath, im)
+    db.update_image_path(filepath)
 
 
 def fighter_alerts_callback(client, userdata, msg):

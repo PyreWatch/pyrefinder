@@ -9,7 +9,7 @@ DB_Name = "pyrefinder.db"
 
 
 class DatabaseManager():
-    """
+    """ Database manager class that manages an instance of the connection to the database
     """
     def __init__(self):
         """Connects to sqlite database and makes sure foreign keys are enabled"""
@@ -109,4 +109,33 @@ def add_fighter_status(topic, jsondict):
         return True
     except Exception as e:
         logging.error("Exception produced while adding fighter: %d", e)
+        return False
+
+
+def update_image_path(filename):
+    """Updates the image path for a fighter given the image filepath
+
+    Args:
+        filename (str): the filename of the image
+
+    Returns:
+        [bool]: returns whether or not the update was without error
+        Note: if fighter is not in database, this fails silently atm
+    """
+    splits = filename.split("/")
+
+    client_id = splits[0]
+
+    try:
+        db = DatabaseManager()
+        db.modify_db(
+            "update fighter set last_image_path = ? where fighter.id = ?",
+            [filename, client_id])
+        logging.debug(
+            f"Updated {client_id}'s last image file path to {filename}")
+        del db
+        return True
+    except Exception as e:
+        logging.error(
+            "Exception produced while updating last image file path: %d", e)
         return False
