@@ -1,8 +1,3 @@
-"""
-Utils.py
-"""
-
-
 def client_from_topic(topic_path):
     """Return client id when give a topic path
 

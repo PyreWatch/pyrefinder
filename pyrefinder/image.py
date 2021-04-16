@@ -1,10 +1,11 @@
-import io
-import os
-import logging
 import datetime
-from pyrefinder import db, utils
+import io
+import logging
+import os
 
 from PIL import Image
+
+from pyrefinder import utils
 
 # Defines the base directory for the project; utilized for image storage
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
