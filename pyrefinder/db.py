@@ -1,4 +1,3 @@
-import json
 import logging
 import sqlite3
 from datetime import datetime
@@ -9,7 +8,7 @@ DB_Name = "pyrefinder.db"
 
 
 class DatabaseManager():
-    """
+    """ Database manager class that manages an instance of the connection to the database
     """
     def __init__(self):
         """Connects to sqlite database and makes sure foreign keys are enabled"""
@@ -105,13 +104,42 @@ def add_fighter_status(topic, jsondict):
             f"Inserted new status: {client}, {now}, {status} into the fighter data table"
         )
 
-        # modifying last_status for the fighter (for pruning purposes)
-        db.modify_db("update fighter set last_status=? where id=?",
-                     [now, client])
-        logging.debug(f"Updated {client}'s last_status update to {now}")
-
         del db
         return True
     except Exception as e:
         logging.error("Exception produced while adding fighter: %d", e)
+        return False
+
+
+def update_image_path(path):
+    """Updates the image path for a fighter given the image filepath
+
+    Args:
+        filename (str): the filename of the image, i.e images/fire/name_time.jpg
+
+    Returns:
+        [bool]: returns whether or not the update was without error
+        Note: if fighter is not in database, this fails silently atm
+    """
+    path_splits = path.split("/")
+
+    filename = path_splits[2]
+
+    filename_splits = filename.split("_")
+
+    client_id = filename_splits[0]
+
+    logging.debug(client_id)
+
+    try:
+        db = DatabaseManager()
+        db.modify_db(
+            "update fighter set last_image_path = ? where fighter.id = ?",
+            [path, client_id])
+        logging.debug(f"Updated {client_id}'s last image file path to {path}")
+        del db
+        return True
+    except Exception as e:
+        logging.error(
+            "Exception produced while updating last image file path: %d", e)
         return False

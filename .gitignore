@@ -143,3 +143,10 @@ Todo.md
 
 # VS Code specifics
 .vscode
+
+# Image folders and tester images
+images
+*.jpg
+
+# Test publisher
+publisher.py
