@@ -1,12 +1,11 @@
 import json
 import logging
-import os
 
 import paho.mqtt.client as mqtt
 
-from . import db, image
+from . import db, image, utils
 
-host = os.getenv('PF_HOST')
+host = "localhost"
 port = 1883
 
 
@@ -14,7 +13,7 @@ def on_connect(client, userdata, flags, rc):
     """On connection, subscribes to the following topics
         - dt/fighter/+ : all fighter devices -> json
         - dt/fighter/+/lwt : all fighter devices last will -> str
-        - dt/fighter/alerts : all fighter alerts -> json
+        - dt/fighter_alerts : all fighter alerts -> json
         - cmd/fighter/+ : all fighter json responses -> json
     
     Args:
@@ -41,7 +40,7 @@ def fighter_status_callback(client, userdata, msg):
     Args:
         client (mqtt.Client()): the mqtt client
         userdata (any): private user data added (not used)
-        msg (json): json with lat, lng, image, and status of fire
+        msg (json): json with lat, lng, and status of fire
     """
     logging.debug(f"Adding status point to fighter_data")
     jsondict = json.loads(msg.payload)
@@ -54,9 +53,18 @@ def fighter_lwt_callback(client, userdata, msg):
     Args:
         client (mqtt.Client()): the mqtt client
         userdata (any): private user data added (not used)
-        msg ((str): last will payload: string [Online, Offline]
+        msg (str): last will payload: string [Online, Offline]
     """
-    print(msg.topic + " " + str(msg.payload))
+    client_id = utils.client_from_topic(msg.topic)
+    now = image.get_now(spaces=True)
+    device_status = str(msg.payload.decode("utf-8"))
+
+    if device_status == "Offline":
+        logging.error(
+            f"Client {client_id} disconnected from Pyrefinder on {now}.")
+
+    elif device_status == "Online":
+        logging.debug(f"Client {client_id} connected to Pyrefinder on {now}.")
 
 
 def fighter_fire_image_callback(client, userdata, msg):
@@ -83,7 +91,11 @@ def fighter_nofire_image_callback(client, userdata, msg):
     """
     im = image.bytes_to_image(msg.payload)
     filepath = image.create_image_filename(msg.topic)
-    image.save_image("images/nofire", filepath, im)
+    path = image.save_image("images/nofire", filepath, im)
+
+    if path == "NOTSAVED":
+        pass
+
     db.update_image_path(f"images/nofire/{filepath}")
 
 
@@ -95,7 +107,13 @@ def fighter_alerts_callback(client, userdata, msg):
         userdata (any): private user data added (not used)
         msg (json): json with client id of sender and the alert
     """
-    print(msg.topic + " " + str(msg.payload))
+    jsondict = json.loads(msg.payload)
+
+    client_id = jsondict['client_id']
+    alert = jsondict['alert']
+
+    logging.debug(
+        f"Fire detected from fighter {client_id}. Alert infomation: {alert}")
 
 
 if __name__ == "__main__":
@@ -113,7 +131,7 @@ if __name__ == "__main__":
                                 fighter_fire_image_callback)
     client.message_callback_add("dt/fighter/+/nofire_image",
                                 fighter_nofire_image_callback)
-    client.message_callback_add("dt/fighter/alerts", fighter_alerts_callback)
+    client.message_callback_add("dt/fighter_alerts", fighter_alerts_callback)
 
     client.connect(host, port)
     client.loop_forever()
