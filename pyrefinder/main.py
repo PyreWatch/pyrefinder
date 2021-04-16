@@ -14,7 +14,7 @@ def on_connect(client, userdata, flags, rc):
     """On connection, subscribes to the following topics
         - dt/fighter/+ : all fighter devices -> json
         - dt/fighter/+/lwt : all fighter devices last will -> str
-        - dt/fighter/alerts : all fighter alerts -> json
+        - dt/fighter_alerts : all fighter alerts -> json
         - cmd/fighter/+ : all fighter json responses -> json
     
     Args:
@@ -108,7 +108,13 @@ def fighter_alerts_callback(client, userdata, msg):
         userdata (any): private user data added (not used)
         msg (json): json with client id of sender and the alert
     """
-    print(msg.topic + " " + str(msg.payload))
+    jsondict = json.loads(msg.payload)
+
+    client_id = jsondict['client_id']
+    alert = jsondict['alert']
+
+    logging.debug(
+        f"Fire detected from fighter {client_id}. Alert infomation: {alert}")
 
 
 if __name__ == "__main__":
@@ -126,7 +132,7 @@ if __name__ == "__main__":
                                 fighter_fire_image_callback)
     client.message_callback_add("dt/fighter/+/nofire_image",
                                 fighter_nofire_image_callback)
-    client.message_callback_add("dt/fighter/alerts", fighter_alerts_callback)
+    client.message_callback_add("dt/fighter_alerts", fighter_alerts_callback)
 
     client.connect(host, port)
     client.loop_forever()
