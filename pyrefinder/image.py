@@ -10,13 +10,19 @@ from PIL import Image
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-def get_now():
-    """Get the current time for using to save the file uniquely
+def get_now(spaces):
+    """Get the current time and formats based off is spaces are desired
+
+    Args:
+        spaces (bool): whether or not the datetime string should contain spaces between sections
 
     Returns:
         [datetime]: returns the current time 
     """
-    return datetime.datetime.now().strftime("%b%d%Y%H:%M:%S")
+    if spaces:
+        return datetime.datetime.now().strftime("%b %d %Y %H:%M:%S")
+    else:
+        return datetime.datetime.now().strftime("%b%d%Y%H:%M:%S")
 
 
 def bytes_to_image(bytes):
@@ -40,7 +46,7 @@ def create_image_filename(topic):
     Returns:
         [str]: filename including extension, i.e. bob_Apr15202100:21:53.jpg
     """
-    time = get_now()
+    time = get_now(spaces=False)
     client_id = utils.client_from_topic(topic)
 
     return f"{client_id}_{time}.jpg"
@@ -55,7 +61,7 @@ def save_image(path, filename, image):
         image (Image): the image from fighter
 
     Return:
-        [str]: returns path to that file including the file name: i.e. images/nofire/image.jpg
+        [str]: returns path to that file including the file name: i.e. images/nofire/image.jpg and NOTSAVED on error
     """
     if not os.path.exists(f"{BASE_DIR}/{path}"):
         try:
@@ -64,6 +70,7 @@ def save_image(path, filename, image):
             logging.error(
                 f"Error creating folder {BASE_DIR}/{path} with the following error: %d",
                 e)
+            return "NOTSAVED"
 
     image.save(f"{path}/{filename}")
 
