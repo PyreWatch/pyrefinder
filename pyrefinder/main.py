@@ -28,7 +28,7 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         client.subscribe([("dt/fighter/+", 1), ("dt/fighter/+/lwt", 1),
                           ("dt/fighter/+/fire_image", 1),
-                          ("dt/fighter/alerts", 2),
+                          ("dt/fighter_alerts", 2),
                           ("dt/fighter/+/nofire_image", 1)])
     else:
         return
@@ -77,7 +77,11 @@ def fighter_fire_image_callback(client, userdata, msg):
     """
     im = image.bytes_to_image(msg.payload)
     filepath = image.create_image_filename(msg.topic)
-    image.save_image("images/fire", filepath, im)
+    path = image.save_image("images/fire", filepath, im)
+
+    if path == "NOTSAVED":
+        pass
+
     db.update_image_path(f"images/fire/{filepath}")
 
 
