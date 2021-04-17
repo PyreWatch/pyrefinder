@@ -5,6 +5,8 @@ from pyrefinder import image
 
 
 def test_create_image_filename():
+    """Testing the proper creation of an image filename
+    """
     topic = "dt/fighter/bob/nofire"
 
     time = image.get_now(spaces=False)
@@ -13,6 +15,8 @@ def test_create_image_filename():
 
 
 def test_save_image():
+    """Testing that files are saved in the proper format and location
+    """
     file = Image.open("87205_1.jpg")
     path = "images/fire"
     filename = "tester.jpg"
